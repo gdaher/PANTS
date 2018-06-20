@@ -6,7 +6,8 @@
 #' @param score.mat A matrix of values from the distribution, where each column is a different simulation, 
 #' and \code{rownames(score.mat)} corresponds to \code{names(eval.v)}.
 #' @param alternative A character string specifying the alternative hypothesis.
-#' @return A matrix of z-scores & p-values with \code{nrow = length(eval.v)}.
+#' @return A matrix with two columns containing z-scores (larger is more significant) & p-values with 
+#' \code{nrow = length(eval.v)}.
 
 p_ecdf <- function(eval.v, score.mat, alternative=c("two.sided", "less", "greater")){
   stopifnot(length(eval.v)==nrow(score.mat), names(eval.v)==rownames(score.mat), ncol(score.mat) > 1)
@@ -32,5 +33,5 @@ p_ecdf <- function(eval.v, score.mat, alternative=c("two.sided", "less", "greate
     wm.v <- apply(cbind(less, gr), MARGIN=1, FUN=which.min)
     zv <- stats::qnorm(p=pv/2, lower.tail = wm.v-1)
   }
-  return(cbind(zv=zv, pv=pv))
+  return(cbind(z=zv, p=pv))
 }

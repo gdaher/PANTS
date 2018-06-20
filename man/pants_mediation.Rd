@@ -4,8 +4,8 @@
 \alias{pants_mediation}
 \title{Pathway Analysis via Network Smoothing using mediation}
 \usage{
-pants_mediation(object, exposure.v, phenotype.v, ker, Gmat, nperm = 10^4,
-  ret.null.mats = FALSE, verbose = TRUE)
+pants_mediation(object, exposure.v, phenotype.v, Gmat, ker = NULL,
+  nperm = 10^4, ret.null.mats = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{object}{A matrix-like data object containing log-ratios or log-expression values for a
@@ -17,9 +17,9 @@ If the vector is named, the names must match the column names of \code{object}.}
 \item{phenotype.v}{A vector of numeric phenotypes the same length as number of samples in \code{object}. If the 
 vector is named, the names must match the column names of \code{object}.}
 
-\item{ker}{The Laplacian kernel matrix.}
-
 \item{Gmat}{The feature by pathway inclusion matrix, indicating which features are in which pathways.}
+
+\item{ker}{The Laplacian kernel matrix.}
 
 \item{nperm}{Number of permutations to perform to evaluate significance of pathways.}
 
@@ -28,11 +28,36 @@ vector is named, the names must match the column names of \code{object}.}
 \item{verbose}{Logical indicating if the permutation number should be output every 500 permutations.}
 }
 \value{
-List of length at least two, with elements \code{pwy.stats} and \code{feature.stats}, each containing a data frame
-of statistics.
+List of at least two dataframes:
+\describe{
+   \item{pwy.stats}{A dataframe with columns 
+   \describe{
+   \item{nfeatures}{number of features in the pathway} 
+   \item{feat.score.avg}{sum of smoothed scores of the pathway's features / \code{nfeatures}. This score is compared
+   to scores in permutations.}
+   \item{z}{pathway permutation z-score (larger is more significant)}
+   \item{p}{pathway permutation p-value} 
+   \item{FDR}{pathway FDR calculated from p-values with \code{p.adjust(p, method='BH')}}
+   }}
+   \item{feature.stats}{A dataframe with columns
+   \describe{
+   \item{score}{feature's score, which is p-value from \code{\link[ezlimma]{hitman}} transformed into z-score 
+   (larger is more significant)}
+   \item{z}{feature z-score (larger is more significant) relative to this feature's scores in permutation 
+   without smoothing. This should be similar to \code{score} if the permutation null distribution matches the 
+   theoretical null distribution.} 
+   \item{p}{feature's permutation p-value} 
+   \code{FDR}{feature's FDR from permutation \code{p}}
+   }}
+   And if \code{ret.null.mats} is TRUE:
+   \item{null.feature.mat}{Matrix with features as rows and permutations as columns, where each element represents
+   the score of that feature in that permutation}
+   \item{null.pwy.mat}{Matrix with pathways as rows and permutations as columns, where each element represents
+   the score of that pathway in that permutation}
+ }
 }
 \description{
-PANTS algorithm for mediation pathway analysis (and optionally integration) via network smoothing
+PANTS algorithm for mediation pathway analysis (and optionally integration) via network smoothing.
 }
 \details{
 Scores for features in the kernel but not in the data are assigned a z-score of zero by default for sparsity.

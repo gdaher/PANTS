@@ -4,9 +4,9 @@
 \alias{pants}
 \title{Pathway Analysis via NeTwork Smoothing}
 \usage{
-pants(object, phenotype.v, contrast.v, ker, Gmat, score_fcn = identity,
-  nperm = 10^4, ret.null.mats = FALSE, verbose = TRUE,
-  alternative = c("two.sided", "less", "greater"))
+pants(object, phenotype.v, contrast.v, Gmat, ker = NULL,
+  score_fcn = identity, nperm = 10^4, ret.null.mats = FALSE,
+  verbose = TRUE, alternative = c("two.sided", "less", "greater"))
 }
 \arguments{
 \item{object}{A matrix-like data object containing log-ratios or log-expression values for a
@@ -18,9 +18,9 @@ If the vector is named, the names must match the column names of \code{object}.}
 \item{contrast.v}{A named vector of constrasts. The constrasts must refer to the phenotypes
 in \code{phenotype.v}. Their order defines the order they are passed to \code{score_fcn}.}
 
-\item{ker}{The Laplacian kernel matrix.}
-
 \item{Gmat}{The feature by pathway inclusion matrix, indicating which features are in which pathways.}
+
+\item{ker}{The Laplacian kernel matrix.}
 
 \item{score_fcn}{A function that transforms the t-statistics from the contrasts. \code{identity} is 
 the trivial identity function returning its argument. Its input must be a vector of same 
@@ -35,8 +35,31 @@ length as number of elements in \code{contrast.v}. Its output must be a scalar.}
 \item{alternative}{A character string specifying the alternative hypothesis.}
 }
 \value{
-List of length at least two, with elements \code{pwy.stats} and \code{feature.stats}, each containing a data frame
-of statistics.
+List of at least two dataframes:
+\describe{
+   \item{pwy.stats}{A dataframe with columns 
+   \describe{
+   \item{nfeatures}{number of features in the pathway} 
+   \item{feat.score.avg}{sum of smoothed scores of the pathway's features / \code{nfeatures}. This score is compared
+   to scores in permutations.}
+   \item{z}{pathway permutation z-score (larger is more significant)}
+   \item{p}{pathway permutation p-value} 
+   \item{FDR}{pathway FDR calculated from p-values with \code{p.adjust(p, method='BH')}}
+   }}
+   \item{feature.stats}{A dataframe with columns
+   \describe{
+   \item{score}{feature's score from applying \code{score_fcn} in \code{\link{score_features}}}
+   \item{z}{feature z-score (larger is more significant) relative to this feature's scores in permutation 
+   (without smoothing)} 
+   \item{p}{feature's permutation p-value} 
+   \code{FDR}{feature's FDR from permutation \code{p}}
+   }}
+   And if \code{ret.null.mats} is TRUE:
+   \item{null.feature.mat}{Matrix with features as rows and permutations as columns, where each element represents
+   the score of that feature in that permutation}
+   \item{null.pwy.mat}{Matrix with pathways as rows and permutations as columns, where each element represents
+   the score of that pathway in that permutation}
+ }
 }
 \description{
 This is the main function of the \code{PANTS} package, which implements the PANTS algorithm
